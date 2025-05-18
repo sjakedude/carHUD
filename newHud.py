@@ -1,56 +1,93 @@
 import pygame
-import sys
+import random
 
-# Initialize pygame
 pygame.init()
 screen = pygame.display.set_mode((800, 480))
-pygame.display.set_caption("Retro Digital Dash")
+pygame.display.set_caption("Digital Dash")
+
+font_large = pygame.font.SysFont("Courier", 72)
+font_small = pygame.font.SysFont("Courier", 36)
+
 clock = pygame.time.Clock()
 
-# Colors
-BLACK = (0, 0, 0)
-GREEN = (0, 255, 0)
-DARK_GREEN = (0, 128, 0)
-WHITE = (255, 255, 255)
+def draw_fuel_bars(surface, fuel_level, x, y):
+    total_bars = 10
+    max_bar_width = 120
+    bar_height = 10
+    spacing = 4
 
-# Fonts
-font_big = pygame.font.Font(None, 140)  # For MPG
-font_small = pygame.font.Font(None, 40)  # For labels
+    bars_to_draw = int((fuel_level / 100) * total_bars)
 
-# Dummy data (replace with real OBD data later)
-mpg = 32.4
-fuel_percent = 0.65  # 65% full
-temp_percent = 0.50  # 50% hot
+    for i in range(total_bars):
+        if i < bars_to_draw:
+            color = (0, 255, 0)  # Green for filled
+        else:
+            color = (40, 80, 40)  # Dim green for empty
 
-# Helper function to draw digital bar gauge
-def draw_bar_gauge(x, y, width, height, percent, label):
-    pygame.draw.rect(screen, DARK_GREEN, (x, y, width, height), 2)
-    inner_width = int(width * percent)
-    pygame.draw.rect(screen, GREEN, (x, y, inner_width, height))
-    label_surface = font_small.render(label, True, GREEN)
-    screen.blit(label_surface, (x, y - 30))
+        # Bars get wider as they go up
+        bar_width = int((i + 1) / total_bars * max_bar_width)
+        rect = pygame.Rect(x, y - (i * (bar_height + spacing)), bar_width, bar_height)
+        pygame.draw.rect(surface, color, rect)
 
-# Main loop
+def draw_temp_bar(surface, temp_percent, x, y):
+    pygame.draw.rect(surface, (100, 100, 100), (x, y, 30, 200))  # background
+    fill_height = int((temp_percent / 100) * 200)
+    pygame.draw.rect(surface, (255, 0, 0), (x, y + 200 - fill_height, 30, fill_height))  # temp bar
+
+def draw_mph(surface, mph):
+    text = font_large.render(f"{mph:.1f} MPH", True, (0, 255, 0))
+    surface.blit(text, (250, 200))
+
+def draw_tachometer(surface, rpm, max_rpm):
+    width, _ = surface.get_size()
+    tach_height = 40
+    bar_width = int((rpm / max_rpm) * width)
+    
+    # Background bar (grey)
+    pygame.draw.rect(surface, (50, 50, 50), (0, 0, width, tach_height))
+    
+    # Foreground bar (red)
+    pygame.draw.rect(surface, (255, 0, 0), (0, 0, bar_width, tach_height))
+
+    # RPM Text centered in tach
+    font = pygame.font.SysFont(None, 24)
+    text = font.render(f"{int(rpm)} RPM", True, (255, 255, 255))
+    text_rect = text.get_rect(center=(width // 2, tach_height // 2))
+    surface.blit(text, text_rect)
+
+
 running = True
 while running:
-    screen.fill(BLACK)
+    screen.fill((0, 0, 0))
+
+    # Fake data for now
+    mph = random.uniform(10, 30)
+    fuel_percent = random.randint(0, 100)
+    temp_percent = random.randint(0, 100)
+
+    draw_mph(screen, mph)
+    draw_temp_bar(screen, temp_percent, 740, 130)
+    draw_fuel_bars(screen, fuel_percent, 20, 460)  # Bottom-left
+
+    # Labels
+    fuel_label = font_small.render("FUEL", True, (0, 255, 0))
+    screen.blit(fuel_label, (20, 460 - 10 * (10 + 4) - 40))  # Moved above the top bar
+
+    temp_label = font_small.render("TEMP", True, (255, 0, 0))
+    screen.blit(temp_label, (700, 80))
+
+    # Example: simulate RPM (replace this with actual OBD reading)
+    current_rpm = 3500
+    max_rpm = 7000
+
+    draw_tachometer(screen, current_rpm, max_rpm)
+
 
     for event in pygame.event.get():
         if event.type == pygame.QUIT:
             running = False
 
-    # Display MPG
-    mpg_text = font_big.render(f"{mpg:.1f} MPG", True, GREEN)
-    screen.blit(mpg_text, (200, 50))
-
-    # Fuel gauge
-    draw_bar_gauge(100, 250, 600, 30, fuel_percent, "FUEL")
-
-    # Temp gauge
-    draw_bar_gauge(100, 320, 600, 30, temp_percent, "TEMP")
-
     pygame.display.flip()
-    clock.tick(30)
+    clock.tick(10)
 
 pygame.quit()
-sys.exit()
