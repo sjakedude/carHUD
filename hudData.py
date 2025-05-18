@@ -1,7 +1,7 @@
 import pygame
 import random
 import time
-import obd
+# import obd
 
 pygame.init()
 
