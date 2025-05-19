@@ -66,22 +66,26 @@ while running:
     temp_percent = random.randint(0, 100)
 
     draw_mph(screen, mph)
-    draw_temp_bar(screen, temp_percent, 740, 130)
     draw_fuel_bars(screen, fuel_percent, 20, 460)  # Bottom-left
 
-    # Labels
+    # Fuel label above the fuel bars
     fuel_label = font_small.render("FUEL", True, (0, 255, 0))
-    screen.blit(fuel_label, (20, 460 - 10 * (10 + 4) - 40))  # Moved above the top bar
+    screen.blit(fuel_label, (20, 460 - 10 * (10 + 4) - 40))
 
+    # Temp gauge at bottom-right corner
+    temp_x = 740
+    temp_y = 460
+    draw_temp_bar(screen, temp_percent, temp_x, temp_y)
+
+    # Temp label above the temp bars
     temp_label = font_small.render("TEMP", True, (255, 0, 0))
-    screen.blit(temp_label, (700, 80))
+    screen.blit(temp_label, (temp_x - 40, temp_y - 200 - 40))
 
-    # Example: simulate RPM (replace this with actual OBD reading)
+    # Example RPM
     current_rpm = 3500
     max_rpm = 7000
 
     draw_tachometer(screen, current_rpm, max_rpm)
-
 
     for event in pygame.event.get():
         if event.type == pygame.QUIT:
